@@ -11,6 +11,7 @@
 #include "font.c"
 
 
+
 void	do_loop_hook2(CFRunLoopTimerRef observer, void * info)
 {
   ((mlx_ptr_t *)info)->loop_hook(((mlx_ptr_t *)info)->loop_hook_data);
@@ -37,9 +38,6 @@ void do_loop_flush(CFRunLoopObserverRef observer, CFRunLoopActivity activity, vo
     }
 }
 
-
-
-
 void *mlx_init()
 {
   mlx_ptr_t	*new_mlx;
@@ -53,6 +51,7 @@ void *mlx_init()
   new_mlx->loop_hook = NULL;
   new_mlx->loop_hook_data = NULL;
   new_mlx->main_loop_active = 0;
+
 
   new_mlx->appid = [NSApplication sharedApplication];
 
@@ -104,9 +103,70 @@ void mlx_loop(mlx_ptr_t *mlx_ptr)
   [NSApp run];
 }
 
+int     ft_add_color(int old_clr, int add_clr, double alpha)
+{
+    int r;
+    int g;
+    int b;
+
+    r = floor((double)(((old_clr >> 16) & 0xFF) * alpha) - (double)(((add_clr >> 16) & 0xFF) * alpha));
+    g = floor((double)(((old_clr >> 8) & 0xFF) * alpha) - (double)(((add_clr >> 8) & 0xFF) * alpha));
+    b = floor((double)(((old_clr) & 0xFF) * alpha) - (double)(((add_clr) & 0xFF) * alpha));
+	return (((0 & 0xff) << 24)  + ((r & 0xff) << 16) + ((g & 0xff) << 8)  + (b & 0xff));
+}
+
+t_rec *init_data_rect(int x, int y, int width, int height)
+{
+	t_rec *rec;
+
+	if (!(rec = (t_rec*)malloc(sizeof(t_rec))))
+		exit(0);
+	rec->x = x;
+	rec->y = y;
+	rec->width = width;
+	rec->height = height;
+	return (rec);
+}
+
+
+void	ft_draw_rec(mlx_img_list_t *img, int clr, t_rec *rec)
+{
+	int tmpx;
+	int tmpy;
+	int a;
+
+	tmpx = rec->x;
+	tmpy = rec->y;
+	a = -1;
+	while (++a <= rec->height)
+	{
+		*((int *)&img->buffer[(tmpx * UNIQ_BPP) + (tmpy * (img->width * UNIQ_BPP))]) = clr;
+		*((int *)&img->buffer[((tmpx + rec->width) * UNIQ_BPP) + (tmpy * (img->width * UNIQ_BPP))]) = clr;
+		tmpy++;
+	}
+	a = -1;
+	while (++a <= rec->width)
+	{
+		*((int *)&img->buffer[(tmpx * UNIQ_BPP) + (rec->y * (img->width * UNIQ_BPP))]) = clr;
+		*((int *)&img->buffer[(tmpx * UNIQ_BPP) + ((rec->y + rec->height) * (img->width * UNIQ_BPP))]) = clr;
+		tmpx++;
+	}
+	free(rec);
+}
+
+
+int     mlx_put_pixel(mlx_img_list_t *img, int x, int y, int clr)
+{
+    if (x < 0 || x >= img->width || y < 0 || y >= img->height)
+        return (0);
+    *((int *)&img->buffer[(x * UNIQ_BPP) + (y * (img->width * UNIQ_BPP))]) = clr;
+
+	return (0);
+}
 
 void mlx_pixel_put(mlx_ptr_t *mlx_ptr, mlx_win_list_t *win_ptr, int x, int y, int color)
 {
+
   if (!win_ptr->pixmgt)
     return ;
   [(id)(win_ptr->winid) selectGLContext];
@@ -114,6 +174,64 @@ void mlx_pixel_put(mlx_ptr_t *mlx_ptr, mlx_win_list_t *win_ptr, int x, int y, in
   win_ptr->nb_flush ++;
 }
 
+int     mlx_get_pixel_clr(mlx_img_list_t *img, int x, int y)
+{
+    int             r;
+    int             g;
+    int             b;
+    unsigned int    p;
+
+    if (x < 0 || x >= img->width || y < 0 || y >= img->height)
+        return (0);
+    p = (x * UNIQ_BPP) + (y * (img->width * UNIQ_BPP));
+    r = img->buffer[p + 2];
+    g = img->buffer[p + 1]; 
+    b = img->buffer[p];
+    return (((r & 0xFF) << 16) + ((g & 0xFF) << 8) + (b & 0xFF));
+}
+
+void	draw_fill_rec(mlx_img_list_t *img, int clr, t_rec *rec, double alpha)
+{
+	int a;
+	int b;
+	int tmpx;
+
+	a = -1;
+	while (++a <= rec->height - 2)
+	{
+		tmpx = rec->x;
+		b = -1;
+		++rec->y;
+		while (++b <= rec->width - 2)
+			*((int *)&img->buffer[(++tmpx * UNIQ_BPP) + (rec->y * (img->width * UNIQ_BPP))]) = ft_add_color(mlx_get_pixel_clr(img, rec->x, rec->y), clr, alpha);
+	}
+	free(rec);
+}
+
+void hidecursor(int hide)
+{
+	if (hide > 0)
+		[NSCursor hide];
+	else if (!hide)
+		[NSCursor unhide];
+}
+
+void lockcursor(int lock)
+{
+	NSRect screenRect;
+	screenRect = [ [NSScreen mainScreen] frame];
+
+	if (lock > 0)
+	{
+		NSRect window;
+		window = [ [NSApp mainWindow] frame];
+		CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+		CGEventRef mouse = CGEventCreateMouseEvent (NULL, kCGEventMouseMoved, CGPointMake(window.origin.x + ((int)window.size.width >> 1), ((screenRect.size.height - (window.size.height + window.origin.y)) + ((int)window.size.height >> 1))), 0);
+		CGEventPost(kCGHIDEventTap, mouse);
+		CFRelease(mouse);
+		CFRelease(source);
+	}
+}
 
 void	mlx_int_loop_once()
 {
@@ -123,7 +241,7 @@ void	mlx_int_loop_once()
   thedate = [NSDate dateWithTimeIntervalSinceNow:0.1];
   while (42)
     {
-      event = [NSApp nextEventMatchingMask:NSAnyEventMask
+      event = [NSApp nextEventMatchingMask:NSEventMaskAny
 		     untilDate:thedate
 		     inMode:NSDefaultRunLoopMode
 		     dequeue:YES];
@@ -136,7 +254,6 @@ void	mlx_int_loop_once()
       [NSApp updateWindows];
     }
 }
-
 
 int     mlx_do_sync(mlx_ptr_t *mlx_ptr)
 {

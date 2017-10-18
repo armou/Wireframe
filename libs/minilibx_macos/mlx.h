@@ -58,7 +58,7 @@ void	*mlx_init();
 ** Basic actions
 */
 
-void	*mlx_new_window(void *mlx_ptr, int size_x, int size_y, char *title);
+void	*mlx_new_window(void *mlx_ptr, int pos_x, int pos_y, int size_x, int size_y, char *title);
 /*
 **  return void *0 if failed
 */
@@ -75,7 +75,7 @@ int	mlx_pixel_put(void *mlx_ptr, void *win_ptr, int x, int y, int color);
 ** Image stuff
 */
 
-void	*mlx_new_image(void *mlx_ptr,int width,int height);
+void	*mlx_new_image(void *mlx_ptr,int width,int height, int clr);
 /*
 **  return void *0 if failed
 */

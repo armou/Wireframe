@@ -6,7 +6,7 @@
 /*   By: aoudin <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/19 16:53:03 by aoudin            #+#    #+#             */
-/*   Updated: 2017/01/23 19:07:01 by aoudin           ###   ########.fr       */
+/*   Updated: 2017/10/18 20:22:46 by aoudin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,8 @@ void		ft_init_image(t_windata *t_fdf)
 	INCLI = 1;
 	ft_print_usage();
 	t_fdf->mlx = mlx_init();
-	t_fdf->win = mlx_new_window(t_fdf->mlx, WIDTH, HEIGHT, FILENAME);
-	t_fdf->img = mlx_new_image(t_fdf->mlx, WIDTH, HEIGHT);
+	t_fdf->win = mlx_new_window(t_fdf->mlx, 800, 200, WIDTH, HEIGHT, FILENAME);
+	t_fdf->img = mlx_new_image(t_fdf->mlx, WIDTH, HEIGHT, 0xFFFFFF);
 	t_fdf->data = mlx_get_data_addr(t_fdf->img, &t_fdf->bpp, &t_fdf->size_line,
 			&t_fdf->endian);
 }
@@ -50,7 +50,7 @@ void		ft_init_image(t_windata *t_fdf)
 void		ft_f5(t_windata *t_fdf)
 {
 	mlx_destroy_image(t_fdf->mlx, t_fdf->img);
-	t_fdf->img = mlx_new_image(t_fdf->mlx, WIDTH, HEIGHT);
+	t_fdf->img = mlx_new_image(t_fdf->mlx, WIDTH, HEIGHT, 0xFFFFFF);
 	t_fdf->data = mlx_get_data_addr(t_fdf->img, &t_fdf->bpp, &t_fdf->size_line,
 			&t_fdf->endian);
 }

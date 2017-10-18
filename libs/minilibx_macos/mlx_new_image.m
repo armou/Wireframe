@@ -12,7 +12,23 @@
 
 
 
-void    *mlx_new_image(mlx_ptr_t *mlx_ptr, int width, int height)
+
+int     mlx_clear_img(mlx_img_list_t *img, int clr)
+{
+	unsigned p;
+	unsigned max;
+
+	p = 0;
+	max = (UNIQ_BPP * img->width * img->height);
+	while (p < max)
+	{
+		*((int *)&img->buffer[p]) = clr;
+		p += 4;
+	}
+	return (0);
+}
+
+void    *mlx_new_image(mlx_ptr_t *mlx_ptr, int width, int height, int clr)
 {
   mlx_img_list_t        *newimg;
 
@@ -29,6 +45,7 @@ void    *mlx_new_image(mlx_ptr_t *mlx_ptr, int width, int height)
   newimg->vertexes[4] = width;  newimg->vertexes[5] = -height;
   newimg->vertexes[6] = 0.0;  newimg->vertexes[7] = -height;
   newimg->buffer = malloc(UNIQ_BPP*width*height);
+//  mlx_clear_img(newimg, clr);
   bzero(newimg->buffer, UNIQ_BPP*width*height);
 
   return (newimg);
@@ -135,7 +152,7 @@ int mlx_string_put(mlx_ptr_t *mlx_ptr, mlx_win_list_t *win_ptr, int x, int y, in
     }
 
   win_ptr->nb_flush ++;
-  
+
   return (0);
 }
 

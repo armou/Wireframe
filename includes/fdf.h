@@ -6,7 +6,7 @@
 /*   By: aoudin <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/01/14 16:42:02 by aoudin            #+#    #+#             */
-/*   Updated: 2017/01/24 13:44:28 by aoudin           ###   ########.fr       */
+/*   Updated: 2017/10/18 20:18:21 by aoudin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 # include <math.h>
 # include "../libs/minilibx_macos/mlx.h"
 # include "../libs/libft/libft.h"
-# include </System/Library/Frameworks/Tk.framework/Versions/8.5/Headers/X11/X.h>
+# include "../libs/X.h"
 
 # define HEIGHT t_fdf->height
 # define WIDTH t_fdf->width

@@ -1,3 +1,4 @@
+
 //  mlx_new_window.m
 
 #import <Cocoa/Cocoa.h>
@@ -26,21 +27,20 @@ static const GLfloat pixel_vertexes[8] =
   };
 
 
-
 int get_mouse_button(NSEventType eventtype)
 {
   switch (eventtype) {
-  case NSLeftMouseDown:
-  case NSLeftMouseUp:
-  case NSLeftMouseDragged:
+  case NSEventTypeLeftMouseDown:
+  case NSEventTypeLeftMouseUp:
+  case NSEventTypeLeftMouseDragged:
     return 1;
-  case NSRightMouseDown:
-  case NSRightMouseUp:
-  case NSRightMouseDragged:
+  case NSEventTypeRightMouseDown:
+  case NSEventTypeRightMouseUp:
+  case NSEventTypeRightMouseDragged:
     return 2;
-  case NSOtherMouseDown:
-  case NSOtherMouseUp:
-  case NSOtherMouseDragged:
+  case NSEventTypeOtherMouseDown:
+  case NSEventTypeOtherMouseUp:
+  case NSEventTypeOtherMouseDragged:
     return 3;
   default:
     return 0;
@@ -337,13 +337,15 @@ int get_mouse_button(NSEventType eventtype)
 
 @implementation MlxWin
 
+
+
 - (id) initWithRect: (NSRect)rect andTitle: (NSString *)title pfaAttrs: (NSOpenGLPixelFormatAttribute *)attrs
 {
   NSOpenGLPixelFormat* pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
 
   if ((self = [super initWithFrame:rect pixelFormat:pixFmt]) != nil)
     {
-      NSUInteger windowStyle = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask;
+      NSUInteger windowStyle = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
 
       win = [[NSWindowEvent alloc] initWithContentRect:rect
 				   styleMask:windowStyle
@@ -614,7 +616,7 @@ int get_mouse_button(NSEventType eventtype)
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, pixel_vbuffer);
   glUniform1i(glsl.loc_pixel_texture, 0);
-  
+
   glBindBuffer(GL_ARRAY_BUFFER, pixel_vbuffer);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(GLfloat), (void*)0);
   glEnableVertexAttribArray(0);
@@ -623,6 +625,7 @@ int get_mouse_button(NSEventType eventtype)
   glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);  // src alpha 0xFF : keep dst
   glBlendEquation(GL_FUNC_ADD);
 
+
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   glDisableVertexAttribArray(0);
 
@@ -630,16 +633,16 @@ int get_mouse_button(NSEventType eventtype)
   while (pixel_nb--) pixtexbuff[pixel_nb] = 0xFF000000;
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, size_x, size_y, 0, GL_BGRA, GL_UNSIGNED_BYTE, pixtexbuff);
   pixel_nb = 0;
-  
+
 }
 
 @end
 
 
 // mlx API
- 
 
-void *mlx_new_window(mlx_ptr_t *mlx_ptr, int size_x, int size_y, char *title)
+
+void *mlx_new_window(mlx_ptr_t *mlx_ptr,int pos_x, int pos_y, int size_x, int size_y, char *title)
 {
   mlx_win_list_t	*newwin;
   NSString		*str;
@@ -652,7 +655,14 @@ void *mlx_new_window(mlx_ptr_t *mlx_ptr, int size_x, int size_y, char *title)
   newwin->pixmgt = 1;
   mlx_ptr->win_list = newwin;
 
-  NSRect windowRect = NSMakeRect(100, 100, size_x, size_y);
+ NSRect screenRect = [[NSScreen mainScreen] frame];
+  if (pos_x < 0 && pos_y < 0)
+  {
+	  pos_x = (screenRect.size.width / 2) - (size_x / 2);
+	  pos_y = (screenRect.size.height / 2) - (size_y / 2);
+  }
+
+  NSRect windowRect = NSMakeRect(pos_x, pos_y, size_x, size_y);
   str = [NSString stringWithCString:title encoding:NSASCIIStringEncoding];
   newwin->winid = [[MlxWin alloc] initWithRect:windowRect andTitle:str pfaAttrs:pfa_attrs];
   if (newwin->winid)

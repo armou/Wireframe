@@ -90,6 +90,13 @@ typedef struct		mlx_ptr_s
   int			main_loop_active;
 } mlx_ptr_t;
 
+typedef	struct	s_rec
+{
+	int	x;
+	int	y;
+	int	width;
+	int	height;
+}				t_rec;
 // proto
 
 int	mlx_shaders(glsl_info_t *glsl);
